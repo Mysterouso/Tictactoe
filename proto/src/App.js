@@ -1,6 +1,7 @@
 import React from 'react';
 import {BrowserRouter as Router,Switch,Route} from 'react-router-dom';
 import CssBaseline from '@material-ui/core/CssBaseline';
+import {Store} from './Context/Store'
 
 import './App.css';
 
@@ -14,19 +15,17 @@ import Navigation from './Components/Navigation';
 
 function App() {
 
-  const [user,handleUser] = React.useState('Anonymous')
-
   return (
     <Router>
-      <React.Fragment>
+      <Store>
         <CssBaseline/>
-          <div className="App">
+        <div className="App">
           <Switch>
-            <Route exact path="/" render={(props)=><Join {...props} user={[user,handleUser]}/>} />
-            <Route path="/play" render={(props)=><Main {...props} user={[user,handleUser]}/> }/>
+            <Route exact path="/" render={(props)=><Join {...props}/>} />
+            <Route path="/play" render={(props)=><Main {...props}/> }/>
           </Switch>
-          </div>
-      </React.Fragment>
+        </div>
+      </Store>
     </Router>
   );
 }
