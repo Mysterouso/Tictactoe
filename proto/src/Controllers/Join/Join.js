@@ -59,10 +59,9 @@ const Join = () => {
             <Grid className={classes.parent} justify="center" alignItems="center" container>
                 <Paper className={classes.paper}>
                     {
-                        isWaiting ? <Waiting/> : <JoinUI/>
+                        isWaiting ? <Waiting shouldWait={shouldWait}/> : <JoinUI/>
                     }
                     <button onClick={test}>See rooms</button>
-                    <button onClick={()=>shouldWait(!isWaiting)}>See rooms</button>
                 </Paper>
             </Grid>
         </React.Fragment>

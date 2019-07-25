@@ -38,10 +38,7 @@ let socket;
 export const Store = ({children}) =>{
 
     if(!socket){
-        socket = io(process.env.REACT_APP_SERVER);
-
-        //General
-        socket.on("player-disconnected",()=>console.log("ze disconnect tho"))  
+        socket = io(process.env.REACT_APP_SERVER);       
     }
 
     const [state,dispatch] = React.useReducer(reducer,initialState)

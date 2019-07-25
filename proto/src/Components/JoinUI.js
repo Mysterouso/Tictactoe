@@ -5,7 +5,10 @@ import {Grid,
     makeStyles,
     TextField,
     Button,
-    ButtonGroup
+    ButtonGroup,
+    Checkbox,
+    FormGroup,
+    FormControlLabel
     } from '@material-ui/core';
 import {orange} from '@material-ui/core/colors';
 
@@ -25,7 +28,8 @@ const useStyles = makeStyles(theme=>({
         marginTop:theme.spacing(3)
     },
     buttonGroup:{
-        marginTop:theme.spacing(3)
+        marginTop:theme.spacing(1),
+        marginBottom:theme.spacing(4)
     },
     button:{
         backgroundColor:orange[300],
@@ -45,6 +49,15 @@ const useStyles = makeStyles(theme=>({
         "&:hover":{
             backgroundColor:orange[600]
         }
+    },
+    formGroup:{
+        marginTop:theme.spacing(1)
+    },
+    checkBox:{
+        color: orange[400],
+        '&$checked': {
+            color: orange[600],
+        }
     }
 }))
 
@@ -54,19 +67,28 @@ const JoinUI = () =>{
 
     const [globalUser,dispatch,socket] = React.useContext(UserCTX)
 
-    const [handle,updateHandle] = React.useState({name:'',roomID:''})
+    const [handle,updateHandle] = React.useState({name:'',roomID:'',isPrivate:false})
     const [userError,isUserError] = React.useState(false)
     const [roomError,isRoomError] = React.useState(false)
 
     React.useEffect(()=>{
         socket.on("room",(data)=>console.log("rooms are", data))
 
-        socket.on("invalid-room",()=>{
-           isRoomError(true)
-        })  
+        socket.on("invalid-room",()=> isRoomError(true))  
+
+        socket.on("player-disconnected",()=>console.log("ze disconnect tho"))  
+
+        return () =>{
+            socket.off("room")
+            socket.off("invalid-room")
+            socket.off("player-disconnected")
+        } 
     },[socket])
 
-    const handleChange = (e) => updateHandle({...handle,[e.target.name]:e.target.value});
+    const handleChange = (e) => {
+        const value = e.target.type === "checkbox" ? e.target.checked : e.target.value;
+        updateHandle({...handle,[e.target.name]:value})
+    };
 
     const isHandleValid = () =>{
         const {name} = handle;
@@ -75,9 +97,9 @@ const JoinUI = () =>{
 
     const passValue = (e) => {
         e.preventDefault();
-        const {name} = handle  
+        const {name,isPrivate} = handle  
         dispatch({type:"UPDATE_USER",payload:name})      
-        socket.emit("create-game",name)
+        socket.emit("create-game",{name,isPrivate})
         //Pass context here
     }
 
@@ -85,7 +107,7 @@ const JoinUI = () =>{
         socket.emit("join-game",handle)
     }
 
-    const {name,roomID} = handle;
+    const {name,roomID,isPrivate} = handle;
 
     return(
         <React.Fragment>
@@ -125,12 +147,21 @@ const JoinUI = () =>{
                     helperText={roomError && "Invalid room ID. Please leave blank if you want to join a random game"}
                     onFocus={()=>isRoomError(false)}
                     />
+                    <FormGroup className={classes.formGroup} row>
+                        <FormControlLabel
+                            control={
+                            <Checkbox checked={isPrivate} color="default" className={classes.checkBox} name="isPrivate" onChange={handleChange}/>
+                            }
+                            label="Allow random joins?"
+                        />
+                    </FormGroup>
+
                     <Grid item>
-                        <ButtonGroup className={classes.buttonGroup} color="secondary" size="large" variant="contained" fullWidth>
-                            <Button className={classes.button} type="submit" variant="text">
+                        <ButtonGroup className={classes.buttonGroup} color="secondary" size="medium" variant="contained" fullWidth>
+                            <Button className={classes.button} type="submit">
                                 Host a game
                             </Button>
-                            <Button className={classes.button} onClick={joinGame} type="button" variant="text">
+                            <Button className={classes.button} onClick={joinGame} type="button">
                                 Find a game
                             </Button>
                         </ButtonGroup>
