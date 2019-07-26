@@ -3,7 +3,7 @@ import Particles from 'react-particles-js';
 import { particleConfig } from './particleConfig';
 import {Grid,
         Paper,
-        makeStyles,
+        makeStyles
         } from '@material-ui/core';
 import { UserCTX } from '../../Context/Store';
 
@@ -14,6 +14,12 @@ const useStyles = makeStyles(theme=>({
     paper:{
         minHeight:"50vh",
         flexBasis:"40%",
+        "@media (max-width:1080px)":{
+            flexBasis:"80%"
+        },
+        "@media (max-width:400px)":{
+            flexBasis:"90%"
+        }
     },
     particles:{
         position:"absolute",
@@ -32,11 +38,12 @@ const useStyles = makeStyles(theme=>({
     }
 }))
 
-const Join = () => {
+const Join = (props) => {
 
     const [globalUser,dispatch,socket] = React.useContext(UserCTX)
 
     const [isWaiting,shouldWait] = React.useState(false)
+    const [isHosting,updateHosting] = React.useState(false)
 
     React.useEffect(()=>{
         socket.on("room-created",({roomID})=>{ 
@@ -55,11 +62,13 @@ const Join = () => {
     return(
         <React.Fragment>
             {/* Commenting out particles to ease load */}
-            <Particles className={classes.particles} canvasClassName={classes.particlesCanvas} params={particleConfig}/>
+            {/* <Particles className={classes.particles} canvasClassName={classes.particlesCanvas} params={particleConfig}/> */}
             <Grid className={classes.parent} justify="center" alignItems="center" container>
                 <Paper className={classes.paper}>
                     {
-                        isWaiting ? <Waiting shouldWait={shouldWait}/> : <JoinUI/>
+                        isWaiting ? <Waiting {...props} hosting={[isHosting,updateHosting]} shouldWait={shouldWait}/> 
+                                    : 
+                                    <JoinUI updateHosting={updateHosting} shouldWait={shouldWait} {...props}/>
                     }
                     <button onClick={test}>See rooms</button>
                 </Paper>

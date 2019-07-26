@@ -35,17 +35,30 @@ const useStyles = makeStyles(theme=>({
 
 }))
 
-const Waiting = ({shouldWait}) =>{
+const Waiting = (props) =>{
+
+    const { shouldWait,hosting:[isHosting,updateHosting]} = props
 
     const [globalUser,dispatch,socket] = React.useContext(UserCTX)
 
     React.useEffect(()=>{
-      socket.on("lobby-left",() =>{
+      socket.on("matchmaking-left",() =>{
         shouldWait(false)
+        dispatch({type:"UPDATE_USER",payload:""})
+        dispatch({type:"UPDATE_ROOM",payload:""})
       })
-      return () => socket.off("lobby-left")
+      return () => socket.off("matchmaking-left")
       
-    },[socket,shouldWait])
+    },[socket,shouldWait,dispatch])
+
+    const goBack = () =>{
+      if(isHosting){
+        socket.emit("leave-matchmaking",globalUser.roomID)
+      }
+      else{
+        shouldWait(false)
+      }
+    }
 
     const classes = useStyles()
     return(
@@ -56,28 +69,27 @@ const Waiting = ({shouldWait}) =>{
                 </Grid>
                 <Grid item>
                 <Typography className={classes.info} variant="h4" gutterBottom>
-                  Waiting for player...
+                  {isHosting ? "Waiting for player..." : "Looking for game..."}
                 </Typography>
                 <hr/>
                 </Grid>
                 <Typography className={classes.info} variant="h6" align="center" gutterBottom>
-                  {`Your room ID is ${globalUser.roomID}.`} <br/> {`Please pass on this code to your friend`}
+                  {`Your room ID is ${globalUser.roomID}.`} <br/> {`Please pass this on code to play with your friend`}
                 </Typography>
                 <Grid className={classes.buttonGroup} container justify="space-around">
                   <Grid item sm={4} lg={5} >
-                    <Button onClick={()=>socket.emit("leave-lobby",globalUser.roomID)} variant="contained" color="secondary" className={classes.button} type="submit">
+                    <Button onClick={goBack} variant="contained" color="secondary" className={classes.button} type="submit">
                         <ArrowBackIcon/>
                         Go back
                     </Button>
                   </Grid>
                   <Grid item sm={4} lg={5}>
                     <Button variant="outlined" color="primary">
-                        Join a random game!
+                        { isHosting ? "Join a random game!" : "Host a game instead!"}
                     </Button>
                   </Grid>
                 </Grid>
               </Grid>
-            {/* <CircularProgress/> */}
         </React.Fragment>
     )
 }

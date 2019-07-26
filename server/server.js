@@ -47,23 +47,6 @@ io.on("connection",(socket)=>{
 
         if(!roomID && roomKeys.length > 0){
             
-            // let roomFound = false
-            // Not a good idea to block server with loop -- stuck forever if no rooms available
-            // Check if there rooms at all
-            // keep track of iteration - use a for loop
-            // while(!roomFound){
-                //Getting random room from rooms
-            //     const randIndex = 
-            //         Math.floor(Math.random() * roomKeys.length)
-            //     const randKey = roomKeys[randIndex]
-            //     if(rooms[randKey].users.length===1){
-            //         socket.join(randKey)
-            //         rooms[randKey].users.push({name,userID:socket.id})
-            //         io.in(randKey).emit("game-starting",rooms[randKey])
-            //         roomFound = true
-            //     };
-            // }
-            //////Refactoring--
             for(let i=0;i<roomKeys.length;i++){
                 const currentRoomKey = roomKeys[i]
                 const currentRoom = rooms[currentRoomKey]
@@ -77,7 +60,7 @@ io.on("connection",(socket)=>{
             }
         }
         else if(roomID.length === 10){
-
+            setTimeout(()=>{
            const roomIndex = roomKeys.findIndex(room=>room === roomID)
            
            if(roomIndex >= 0){ 
@@ -92,6 +75,7 @@ io.on("connection",(socket)=>{
                 roomID = null;
                 io.to(socket.id).emit("invalid-room")
             }
+        },5000)
         }
         else if(roomID.length>10 || roomID.length <10 && roomID.length>0){
             io.to(socket.id).emit("invalid-room")
@@ -110,19 +94,23 @@ io.on("connection",(socket)=>{
         const userToNotify = disconnect(socket,rooms)
 
         io.to(userToNotify).emit("player-disconnected")
+
         //Pending - need to create logic for leaving after game ends
+        //Could be done on client -- maybe no further action is needed
 
         
         //Need to account for player leaving mid-game - "player left message"
+        // Again, single endpoint could be hit by client - determining what to do can be delegated to client
     })
 
-    socket.on("leave-lobby",(roomID)=>{
+    socket.on("leave-matchmaking",(roomID)=>{
 
         try{
             delete rooms[roomID]
-            io.to(socket.id).emit("lobby-left")
+            io.to(socket.id).emit("matchmaking-left")
         }
         catch{
+            //Endpoint being hit by client -- no need to do anything else
             console.log("Theres a bug somewhere")
         }
 

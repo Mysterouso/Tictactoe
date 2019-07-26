@@ -22,7 +22,7 @@ function App() {
         <div className="App">
           <Switch>
             <Route exact path="/" render={(props)=><Join {...props}/>} />
-            <Route path="/play" render={(props)=><Main {...props}/> }/>
+            <Route path="/play/:roomID" render={(props)=><Main {...props}/> }/>
           </Switch>
         </div>
       </Store>

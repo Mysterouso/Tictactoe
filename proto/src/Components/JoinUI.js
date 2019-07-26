@@ -8,11 +8,18 @@ import {Grid,
     ButtonGroup,
     Checkbox,
     FormGroup,
-    FormControlLabel
+    FormControlLabel,
+    useMediaQuery
     } from '@material-ui/core';
 import {orange} from '@material-ui/core/colors';
+import Spinner from './Spinner';
+
 
 const useStyles = makeStyles(theme=>({
+    container:{
+        height:"100%",
+        width:"100%"
+    },
     heading:{
         marginTop:theme.spacing(3),
         color:"black"
@@ -30,25 +37,23 @@ const useStyles = makeStyles(theme=>({
     buttonGroup:{
         marginTop:theme.spacing(1),
         marginBottom:theme.spacing(4)
+        // "@media (max-width:768px)":{
+        //     display:"flex",
+        //     flexDirection:"column"
+        // }
     },
     button:{
         backgroundColor:orange[300],
         color:"black",
-        // height:"32px",
-        // marginTop:theme.spacing(3),
-        // "&:nth-child(1)":{
-        //     borderTopRightRadius:0,
-        //     borderBottomRightRadius:0,
-        //     borderRightColor:"1px solid black"
-        // },
-        // "&:nth-child(2)":{
-        //     borderTopLeftRadius:0,
-        //     borderBottomLeftRadius:0,
-        //     borderLeft:"1px solid black"
-        //},
         "&:hover":{
             backgroundColor:orange[600]
+        },
+        "&.Mui-disabled":{
+            backgroundColor:orange[300]
         }
+        // "@media(max-width:599px)":{
+        //     fontSize:"0.6rem"
+        // }
     },
     formGroup:{
         marginTop:theme.spacing(1)
@@ -61,29 +66,39 @@ const useStyles = makeStyles(theme=>({
     }
 }))
 
-const JoinUI = () =>{
+const JoinUI = ({shouldWait,updateHosting,history}) =>{
 
     const classes = useStyles()
+
+    const isSmallScreen = useMediaQuery('(max-width:400px)')
 
     const [globalUser,dispatch,socket] = React.useContext(UserCTX)
 
     const [handle,updateHandle] = React.useState({name:'',roomID:'',isPrivate:false})
     const [userError,isUserError] = React.useState(false)
     const [roomError,isRoomError] = React.useState(false)
+    const [isLoading,updateButton] = React.useState(true)
 
     React.useEffect(()=>{
         socket.on("room",(data)=>console.log("rooms are", data))
 
-        socket.on("invalid-room",()=> isRoomError(true))  
+        socket.on("invalid-room",()=> {
+            isRoomError(true)
+            updateButton(false)
+        })  
 
-        socket.on("player-disconnected",()=>console.log("ze disconnect tho"))  
+        socket.on("room-found",()=>{
+            dispatch({type:"UPDATE_USER",payload:handle.name})
+            history.push(`/play/${roomID}`)
+        })
+        // Todo -- change state of a disconnect value prior and reset upon game found
+        socket.on("player-disconnected",()=>console.log("Opppnent has disconnected disconnect tho"))  
 
         return () =>{
             socket.off("room")
             socket.off("invalid-room")
-            socket.off("player-disconnected")
         } 
-    },[socket])
+    },[socket,dispatch])
 
     const handleChange = (e) => {
         const value = e.target.type === "checkbox" ? e.target.checked : e.target.value;
@@ -100,18 +115,33 @@ const JoinUI = () =>{
         const {name,isPrivate} = handle  
         dispatch({type:"UPDATE_USER",payload:name})      
         socket.emit("create-game",{name,isPrivate})
+        updateHosting(true)
         //Pass context here
     }
 
     const joinGame = () =>{
+        const {name,roomID} = handle
+
         socket.emit("join-game",handle)
+
+        if(!roomID){
+            dispatch({type:"UPDATE_USER",payload:handle.name})
+            updateHosting(false)
+            shouldWait(true)
+        }
+        else{
+            updateButton(true)
+            //--Loading state on button 
+            // disable button
+            // socket event will redirect to appropriate page if roomID is valid and room is not full
+        }
+        //If roomID is valid jump straight to game screen
     }
 
     const {name,roomID,isPrivate} = handle;
 
     return(
-        <React.Fragment>
-            <Grid container justify="center">
+            <Grid className={classes.container} container justify="center">
                 <Grid item sm={12} lg={12}>
                     <Typography className={classes.heading}color="primary" align="center" variant="h3">
                         Tic-Tac-Toe
@@ -123,7 +153,8 @@ const JoinUI = () =>{
                 <Grid onSubmit={passValue} 
                     component="form" 
                     item 
-                    sm={12} 
+                    xs={11}
+                    sm={10} 
                     lg={9}>
             
                     <TextField className={classes.formField}
@@ -157,21 +188,17 @@ const JoinUI = () =>{
                     </FormGroup>
 
                     <Grid item>
-                        <ButtonGroup className={classes.buttonGroup} color="secondary" size="medium" variant="contained" fullWidth>
+                        <ButtonGroup className={classes.buttonGroup} color="secondary" size={isSmallScreen ? "small" : "medium"} variant="contained" fullWidth>
                             <Button className={classes.button} type="submit">
                                 Host a game
                             </Button>
-                            <Button className={classes.button} onClick={joinGame} type="button">
-                                Find a game
+                            <Button className={classes.button} onClick={joinGame} disabled={isLoading} type="button">
+                                {isLoading ? <Spinner border={4} size={20}/> : "Find a game"}
                             </Button>
                         </ButtonGroup>
                     </Grid>
-                
                 </Grid>
-            
-
             </Grid>
-        </React.Fragment>
     )
 }
 

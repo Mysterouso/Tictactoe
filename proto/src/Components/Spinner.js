@@ -2,11 +2,30 @@ import React from 'react';
 import {makeStyles} from "@material-ui/core"
 
 const useStyles = makeStyles(theme=>({
-    spinnerContainer: {
-        height: "60px",
-        width: "60px",
+    spinnerContainer:props=>({
+        height: (props.size +"px" || "60px"),
+        width: (props.size +"px" || "60px"),
         position:"relative"
-    },
+    }),
+    spinner: props=>({
+        width: (props.size || 60),
+        height:(props.size || 60),
+        borderRadius: "50%",
+        border: (props.border || 8) + "px solid " + (props.mainColor || theme.palette.primary.main),
+        boxSizing: "border-box",
+        animation: "sweep 1s linear alternate infinite, rota 0.8s linear infinite"
+    }),
+    innerSpinner: props=>({
+        width: (props.size - props.border || 52),
+        height:(props.size - props.border || 52),
+        position:"absolute",
+        left:(props.border/2 || 4),
+        top: (props.border/2 || 4),
+        borderRadius: "50%",
+        border: (props.border || 8) + "px solid " + (props.secondaryColor || theme.palette.secondary.main),
+        boxSizing: "border-box",
+        animation: "sweep 1s linear alternate infinite, rota 0.8s linear infinite"
+    }),
     newSpinner:{
       width:"60px",
       height:"60px",
@@ -19,25 +38,6 @@ const useStyles = makeStyles(theme=>({
       textIndent: "-9999em",
       animation: "rota 0.8s linear infinite"
     },
-    spinner: props=>({
-        width: "60px",
-        height: "60px",
-        borderRadius: "50%",
-        border: "8px solid "+ (props.mainColor || theme.palette.primary.main),
-        boxSizing: "border-box",
-        animation: "sweep 1s linear alternate infinite, rota 0.8s linear infinite"
-    }),
-    innerSpinner: props=>({
-        width: "52px",
-        height: "52px",
-        position:"absolute",
-        left:"4px",
-        top:"4px",
-        borderRadius: "50%",
-        border: "8px solid "+ (props.secondaryColor || theme.palette.secondary.main),
-        boxSizing: "border-box",
-        animation: "sweep 1s linear alternate infinite, rota 0.8s linear infinite"
-    }),
     newInnerSpinner: props=>({
         width: "54px",
         height: "54px",
