@@ -7,11 +7,11 @@ import './App.css';
 
 import Join from './Controllers/Join/Join';
 import Main from './Controllers/Main';
+import NotFound from './Components/NotFound'
 
-import Navigation from './Components/Navigation';
+const regex = /\/play\/[\S]{10}/
 
-
-
+const mainPath = "/play/:roomID"
 
 function App() {
 
@@ -21,8 +21,9 @@ function App() {
         <CssBaseline/>
         <div className="App">
           <Switch>
-            <Route exact path="/" render={(props)=><Join {...props}/>} />
-            <Route path="/play/:roomID" render={(props)=><Main {...props}/> }/>
+            <Route exact path="/" component={Join} />
+            <Route path={regex} component={Main}/>
+            <Route component={NotFound}/>
           </Switch>
         </div>
       </Store>

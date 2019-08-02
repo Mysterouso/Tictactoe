@@ -1,14 +1,14 @@
 import React from "react";
 import {Grid,
         Typography,
-        Paper,
         Button,
         makeStyles} 
         from '@material-ui/core';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack'
 import {orange} from '@material-ui/core/colors';  
 import { UserCTX } from '../Context/Store';
-import Spinner from "./Spinner"
+import Spinner from "./Spinner";
+
 
 const useStyles = makeStyles(theme=>({
     container:{
@@ -37,16 +37,19 @@ const useStyles = makeStyles(theme=>({
 
 const Waiting = (props) =>{
 
-    const { shouldWait,hosting:[isHosting,updateHosting]} = props
+    const { history,shouldWait,hosting:[isHosting,updateHosting]} = props
 
     const [globalUser,dispatch,socket] = React.useContext(UserCTX)
 
     React.useEffect(()=>{
       socket.on("matchmaking-left",() =>{
         shouldWait(false)
+
+        // Fix to one dispatch --
         dispatch({type:"UPDATE_USER",payload:""})
         dispatch({type:"UPDATE_ROOM",payload:""})
       })
+
       return () => socket.off("matchmaking-left")
       
     },[socket,shouldWait,dispatch])
@@ -67,15 +70,19 @@ const Waiting = (props) =>{
                 <Grid className={classes.spinnerRow} item justify="center" container sm={12}>
                   <Spinner secondaryColor={orange[500]}/>  
                 </Grid>
-                <Grid item>
-                <Typography className={classes.info} variant="h4" gutterBottom>
-                  {isHosting ? "Waiting for player..." : "Looking for game..."}
-                </Typography>
-                <hr/>
+                <Grid  container justify="center" item sm={12} lg={12}>
+                  {/* <Grid>  */}
+                    <Typography className={classes.info} variant="h4" gutterBottom>
+                      {isHosting ? "Waiting for player..." : "Looking for game..."}
+                      <hr/>
+                    </Typography>
+                  {/* </Grid> */}
                 </Grid>
-                <Typography className={classes.info} variant="h6" align="center" gutterBottom>
-                  {`Your room ID is ${globalUser.roomID}.`} <br/> {`Please pass this on code to play with your friend`}
-                </Typography>
+                <Grid item sm={12} lg={12}>
+                  <Typography className={classes.info} variant="h6" align="center" gutterBottom>
+                    {`Your room ID is ${globalUser.roomID}.`} <br/> {`Please pass this on code to play with your friend`}
+                  </Typography>
+                </Grid>
                 <Grid className={classes.buttonGroup} container justify="space-around">
                   <Grid item sm={4} lg={5} >
                     <Button onClick={goBack} variant="contained" color="secondary" className={classes.button} type="submit">

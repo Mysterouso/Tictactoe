@@ -1,6 +1,6 @@
 import React from 'react';
-import Particles from 'react-particles-js';
-import { particleConfig } from './particleConfig';
+// import Particles from 'react-particles-js';
+// import { particleConfig } from './particleConfig';
 import {Grid,
         Paper,
         makeStyles
@@ -9,6 +9,56 @@ import { UserCTX } from '../../Context/Store';
 
 import JoinUI from '../../Components/JoinUI'
 import Waiting from '../../Components/Waiting'
+
+const Join = (props) => {
+
+    const [globalUser,dispatch,socket] = React.useContext(UserCTX)
+
+    const [isWaiting,shouldWait] = React.useState(false)
+    const [isHosting,updateHosting] = React.useState(false)
+
+    React.useEffect(()=>{
+        socket.on("room-created",({roomID,userID,user})=>{ 
+            // dispatch({type:"UPDATE_ROOM",payload:roomID})
+            // dispatch({type:"UPDATE_IDENTIFIER",payload:userID})
+            dispatch({type:"UPDATE_MULTIPLE",payload:{
+                                                user,
+                                                roomID,
+                                                identifier:userID
+                                            }
+            })
+
+            shouldWait(true)
+        })
+        
+        socket.on("room",(data)=>console.log("rooms are", data))
+        
+    },[dispatch,socket])
+
+    const test = () =>{
+        socket.emit("show-rooms")
+    }
+
+    const classes = useStyles()
+
+    return(
+        <React.Fragment>
+            {/* Commenting out particles to ease load */}
+            {/* <Particles className={classes.particles} canvasClassName={classes.particlesCanvas} params={particleConfig}/> */}
+            <Grid className={classes.parent} justify="center" alignItems="center" container>
+                <Paper className={classes.paper}>
+                    {
+                        isWaiting ? <Waiting {...props} hosting={[isHosting,updateHosting]} shouldWait={shouldWait}/> 
+                                    : 
+                                    <JoinUI updateHosting={updateHosting} shouldWait={shouldWait} {...props}/>
+                    }
+                    <button onClick={test}>See rooms</button>
+                    <button onClick={()=>console.log(globalUser)}>Show global state</button>
+                </Paper>
+            </Grid>
+        </React.Fragment>
+    )
+}
 
 const useStyles = makeStyles(theme=>({
     paper:{
@@ -37,44 +87,5 @@ const useStyles = makeStyles(theme=>({
         height:"100vh"
     }
 }))
-
-const Join = (props) => {
-
-    const [globalUser,dispatch,socket] = React.useContext(UserCTX)
-
-    const [isWaiting,shouldWait] = React.useState(false)
-    const [isHosting,updateHosting] = React.useState(false)
-
-    React.useEffect(()=>{
-        socket.on("room-created",({roomID})=>{ 
-            dispatch({type:"UPDATE_ROOM",payload:roomID})
-            shouldWait(true)
-        })
-        
-    },[dispatch,socket])
-
-    const test = () =>{
-        socket.emit("show-rooms")
-    }
-
-    const classes = useStyles()
-
-    return(
-        <React.Fragment>
-            {/* Commenting out particles to ease load */}
-            {/* <Particles className={classes.particles} canvasClassName={classes.particlesCanvas} params={particleConfig}/> */}
-            <Grid className={classes.parent} justify="center" alignItems="center" container>
-                <Paper className={classes.paper}>
-                    {
-                        isWaiting ? <Waiting {...props} hosting={[isHosting,updateHosting]} shouldWait={shouldWait}/> 
-                                    : 
-                                    <JoinUI updateHosting={updateHosting} shouldWait={shouldWait} {...props}/>
-                    }
-                    <button onClick={test}>See rooms</button>
-                </Paper>
-            </Grid>
-        </React.Fragment>
-    )
-}
 
 export default Join;

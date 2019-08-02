@@ -14,12 +14,10 @@ const rooms = {}
 
 const io = socketio(http)
 
-//Allow option to disable random joins
-// Need structure update -- isPrivate property in room object 
-
 io.on("connection",(socket)=>{
 
-    //General interactions
+    //---------------------------------General----------------------------------------//
+
     socket.on("create-game", async ({name,isPrivate})=>{
         const roomID = await nanoid(10);
         const userID = socket.id;
@@ -36,57 +34,54 @@ io.on("connection",(socket)=>{
                         };
         }
         socket.join(roomID)
-        io.to(socket.id).emit("room-created",{roomID})
+        io.to(socket.id).emit("room-created",{roomID,userID,user:name})
     })
 
     socket.on("join-game",({name,roomID})=>{
-
-        //Join games by roomID
-
+        // Todo - should send if game was not found -- on client should resend join request if game not found
         const roomKeys = Object.keys(rooms)
-
+        //Emit event if no rooms exist
         if(!roomID && roomKeys.length > 0){
             
             for(let i=0;i<roomKeys.length;i++){
                 const currentRoomKey = roomKeys[i]
                 const currentRoom = rooms[currentRoomKey]
-                //Joining room if not already full
 
                 if( !currentRoom.isPrivate && currentRoom.users.length===1){
                     socket.join(currentRoomKey)
                     currentRoom.users.push({name,userID:socket.id})
-                    io.in(currentRoomKey).emit("game-starting",currentRoom)
+                    // Since roomID is being used as a key, it needs to be appended onto the room object when emitted
+                    io.in(currentRoomKey).emit("game-starting",{...currentRoom,roomID:currentRoomKey,userID:socket.id})
                 }
             }
         }
+        //Find room by id given
         else if(roomID.length === 10){
-            setTimeout(()=>{
-           const roomIndex = roomKeys.findIndex(room=>room === roomID)
+           const roomToFind = roomKeys.find(room=>room === roomID)
+           const roomUsers = rooms[roomToFind].users
            
-           if(roomIndex >= 0){ 
-               roomToJoin = roomKeys[roomIndex]
-               socket.join(roomToJoin)
-               rooms[roomToJoin].users.push({name,userID:socket.id})
-               io.in(roomToJoin).emit("game-starting",rooms[roomToJoin])
+           if(roomToFind){ 
+               if(roomUsers.length === 1){
+                    socket.join(roomToFind)
+                    rooms[roomToFind].users.push({name,userID:socket.id})
+                    io.in(roomToFind).emit("game-starting",{...rooms[roomToFind],roomID:roomToFind,userID:socket.id})
+               }
+               else{
+                   io.to(socket.id).emit("room-full")
+               }
             }
             //If room not found, enter new room or take back to homepage - still deciding
             // Give input error -
             else{
-                roomID = null;
                 io.to(socket.id).emit("invalid-room")
             }
-        },5000)
+
+
         }
-        else if(roomID.length>10 || roomID.length <10 && roomID.length>0){
+        else{
             io.to(socket.id).emit("invalid-room")
         }
-
-
        
-    })
-    //To check rooms from client(temporary)
-    socket.on("show-rooms",(data)=>{
-        socket.emit("room",rooms)
     })
 
     socket.on("disconnect",()=>{
@@ -103,22 +98,59 @@ io.on("connection",(socket)=>{
         // Again, single endpoint could be hit by client - determining what to do can be delegated to client
     })
 
+     //To check rooms from client(temporary)
+     socket.on("show-rooms",(data)=>{
+        socket.emit("room",rooms)
+    })
+
+    //---------------------------------Matchmaking----------------------------------------//
+
     socket.on("leave-matchmaking",(roomID)=>{
 
         try{
             delete rooms[roomID]
             io.to(socket.id).emit("matchmaking-left")
         }
-        catch{
-            //Endpoint being hit by client -- no need to do anything else
-            console.log("Theres a bug somewhere")
+        catch(e){
+            console.log(e)
         }
 
     })
 
-    //Chatting
+    socket.on("verify-player",({identifier,roomID})=>{
+
+        const currentRoom = rooms[roomID]
+        
+        if(!currentRoom) return io.to(socket.id).emit("player-not-verified")
+
+        const isPlayer = currentRoom.users.findIndex(user=>user.userID === identifier)
+
+        if(isPlayer>=0){
+            console.log("Before starting")
+            io.to(socket.id).emit("player-verified")
+            console.log("After verify emit")
+            const randIndex = Math.round(Math.random())
+            const firstTurn = currentRoom.users[randIndex]
+            console.log("Before first-turn emit")
+            io.in(roomID).emit("first-turn",{firstTurn})
+            console.log("After first-turn emit")
+        }
+        else{
+            io.to(socket.id).emit("player-not-verified")
+        }
+
+    })
 
     //Gameplay progression
+
+    socket.on("player-moved",({roomID,position})=>{
+        socket.to(roomID).emit("opponent-moved",{position})
+    })
+
+    // gameSocket(io,socket,rooms)
+    
+    
+    //Chatting
 
     //Reset game
 })

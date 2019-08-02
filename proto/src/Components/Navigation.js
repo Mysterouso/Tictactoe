@@ -1,12 +1,5 @@
 import React from 'react';
-import styled from 'styled-components';
-import {AppBar,Toolbar,Typography} from '@material-ui/core';
-
-const MyNav = styled.div`
-    height:40px;
-    background-color:orange;
-`
-
+import {AppBar,Toolbar,Typography,makeStyles} from '@material-ui/core';
 
 const Navigation = () => {
     return(
