@@ -1,17 +1,13 @@
 import React from 'react';
 import {BrowserRouter as Router,Switch,Route} from 'react-router-dom';
 import CssBaseline from '@material-ui/core/CssBaseline';
-import {Store} from './Context/Store'
+import {Store} from './Context&Reducers/Store'
 
 import './App.css';
 
 import Join from './Controllers/Join/Join';
 import Main from './Controllers/Main';
 import NotFound from './Components/NotFound'
-
-const regex = /\/play\/[\S]{10}/
-
-const mainPath = "/play/:roomID"
 
 function App() {
 
@@ -22,7 +18,7 @@ function App() {
         <div className="App">
           <Switch>
             <Route exact path="/" component={Join} />
-            <Route path={regex} component={Main}/>
+            <Route path="/play/:roomID([\S]{10})" component={Main}/>
             <Route component={NotFound}/>
           </Switch>
         </div>

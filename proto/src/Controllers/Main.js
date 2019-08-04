@@ -1,5 +1,5 @@
 import React from 'react';
-import { UserCTX } from '../Context/Store';
+import { UserCTX } from '../Context&Reducers/Store';
 
 import MainUI from '../Components/MainUI';
 
@@ -27,13 +27,15 @@ const Main = ({match}) =>{
     },[])
 
     React.useEffect(()=>{
-        // socket.on("player-verified",()=>{
-        //     updateLoading(false)
-        //     changeAuthorization(true)
-        // })
-        // socket.on("player-not-verified",()=>{
-        //     updateLoading(false)
-        // })
+        socket.on("player-verified",()=>{
+            // updateLoading(false)
+            // changeAuthorization(true)
+            console.log("I am verified")
+        })
+        socket.on("player-not-verified",()=>{
+            // updateLoading(false)
+            console.log("I am not verified")
+        })
         socket.on("first-turn",({firstTurn})=>{
             console.log("I work ",firstTurn)
             if(firstTurn.userID === globalUser.identifier){
@@ -41,8 +43,8 @@ const Main = ({match}) =>{
             }
         })
         return ()=>{
-            // socket.off("player-verified")
-            // socket.off("player-not-verified")
+            socket.off("player-verified")
+            socket.off("player-not-verified")
             socket.off("first-turn")
         }
     },[socket,globalUser.identifier])

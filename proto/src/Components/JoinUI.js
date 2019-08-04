@@ -1,5 +1,5 @@
 import React from 'react';
-import { UserCTX } from '../Context/Store';
+import { UserCTX } from '../Context&Reducers/Store';
 import {Grid,
         Typography,
         makeStyles,

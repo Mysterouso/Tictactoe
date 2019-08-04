@@ -126,14 +126,10 @@ io.on("connection",(socket)=>{
         const isPlayer = currentRoom.users.findIndex(user=>user.userID === identifier)
 
         if(isPlayer>=0){
-            console.log("Before starting")
             io.to(socket.id).emit("player-verified")
-            console.log("After verify emit")
             const randIndex = Math.round(Math.random())
             const firstTurn = currentRoom.users[randIndex]
-            console.log("Before first-turn emit")
             io.in(roomID).emit("first-turn",{firstTurn})
-            console.log("After first-turn emit")
         }
         else{
             io.to(socket.id).emit("player-not-verified")
@@ -144,6 +140,7 @@ io.on("connection",(socket)=>{
     //Gameplay progression
 
     socket.on("player-moved",({roomID,position})=>{
+        console.log(position)
         socket.to(roomID).emit("opponent-moved",{position})
     })
 

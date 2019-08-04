@@ -6,7 +6,7 @@ import {Grid,
         from '@material-ui/core';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack'
 import {orange} from '@material-ui/core/colors';  
-import { UserCTX } from '../Context/Store';
+import { UserCTX } from '../Context&Reducers/Store';
 import Spinner from "./Spinner";
 
 

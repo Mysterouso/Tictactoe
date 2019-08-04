@@ -5,7 +5,7 @@ import {Grid,
         Paper,
         makeStyles
         } from '@material-ui/core';
-import { UserCTX } from '../../Context/Store';
+import { UserCTX } from '../../Context&Reducers/Store';
 
 import JoinUI from '../../Components/JoinUI'
 import Waiting from '../../Components/Waiting'
