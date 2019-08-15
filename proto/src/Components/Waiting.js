@@ -9,35 +9,9 @@ import {orange} from '@material-ui/core/colors';
 import { UserCTX } from '../Context&Reducers/Store';
 import Spinner from "./Spinner";
 
-
-const useStyles = makeStyles(theme=>({
-    container:{
-      height:"100%",
-      width:"100%"
-    },
-    spinnerRow:{
-      marginTop:theme.spacing(4)
-    },
-    info:{
-      marginTop:theme.spacing(2)
-    },
-    button:{
-      backgroundColor:orange[400],
-      color:"black",
-      "&:hover":{
-        backgroundColor:orange[600]
-      }
-    },
-    buttonGroup:{
-      marginTop:theme.spacing(3),
-      marginBottom:theme.spacing(3)
-    }
-
-}))
-
 const Waiting = (props) =>{
 
-    const { history,shouldWait,hosting:[isHosting,updateHosting]} = props
+    const { history,shouldWait } = props
 
     const [globalUser,dispatch,socket] = React.useContext(UserCTX)
 
@@ -55,14 +29,14 @@ const Waiting = (props) =>{
     },[socket,shouldWait,dispatch])
 
     const goBack = () =>{
-      if(isHosting){
+      if(globalUser.hostPlayer){
         socket.emit("leave-matchmaking",globalUser.roomID)
       }
       else{
         shouldWait(false)
       }
     }
-
+    const { hostPlayer } = globalUser
     const classes = useStyles()
     return(
         <React.Fragment>
@@ -73,7 +47,7 @@ const Waiting = (props) =>{
                 <Grid  container justify="center" item sm={12} lg={12}>
                   {/* <Grid>  */}
                     <Typography className={classes.info} variant="h4" gutterBottom>
-                      {isHosting ? "Waiting for player..." : "Looking for game..."}
+                      {hostPlayer ? "Waiting for player..." : "Looking for game..."}
                       <hr/>
                     </Typography>
                   {/* </Grid> */}
@@ -92,7 +66,7 @@ const Waiting = (props) =>{
                   </Grid>
                   <Grid item sm={4} lg={5}>
                     <Button variant="outlined" color="primary">
-                        { isHosting ? "Join a random game!" : "Host a game instead!"}
+                        { hostPlayer ? "Join a random game!" : "Host a game instead!"}
                     </Button>
                   </Grid>
                 </Grid>
@@ -100,5 +74,30 @@ const Waiting = (props) =>{
         </React.Fragment>
     )
 }
+
+const useStyles = makeStyles(theme=>({
+  container:{
+    height:"100%",
+    width:"100%"
+  },
+  spinnerRow:{
+    marginTop:theme.spacing(4)
+  },
+  info:{
+    marginTop:theme.spacing(2)
+  },
+  button:{
+    backgroundColor:orange[400],
+    color:"black",
+    "&:hover":{
+      backgroundColor:orange[600]
+    }
+  },
+  buttonGroup:{
+    marginTop:theme.spacing(3),
+    marginBottom:theme.spacing(3)
+  }
+
+}))
 
 export default Waiting;

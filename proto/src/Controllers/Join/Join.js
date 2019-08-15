@@ -15,7 +15,6 @@ const Join = (props) => {
     const [globalUser,dispatch,socket] = React.useContext(UserCTX)
 
     const [isWaiting,shouldWait] = React.useState(false)
-    const [isHosting,updateHosting] = React.useState(false)
 
     React.useEffect(()=>{
         socket.on("room-created",({roomID,userID,user})=>{ 
@@ -32,6 +31,8 @@ const Join = (props) => {
         })
         
         socket.on("room",(data)=>console.log("rooms are", data))
+
+        return () => socket.off("room-created")
         
     },[dispatch,socket])
 
@@ -48,9 +49,9 @@ const Join = (props) => {
             <Grid className={classes.parent} justify="center" alignItems="center" container>
                 <Paper className={classes.paper}>
                     {
-                        isWaiting ? <Waiting {...props} hosting={[isHosting,updateHosting]} shouldWait={shouldWait}/> 
+                        isWaiting ? <Waiting {...props} shouldWait={shouldWait}/> 
                                     : 
-                                    <JoinUI updateHosting={updateHosting} shouldWait={shouldWait} {...props}/>
+                                    <JoinUI shouldWait={shouldWait} {...props}/>
                     }
                     <button onClick={test}>See rooms</button>
                     <button onClick={()=>console.log(globalUser)}>Show global state</button>

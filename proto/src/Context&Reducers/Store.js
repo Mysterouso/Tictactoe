@@ -1,6 +1,7 @@
 import React,{createContext} from 'react';
 import { withRouter } from "react-router";
 import io from 'socket.io-client';
+import {reducer,initialState} from './UserReducer'
 
 // SOCKET TABLE 
 
@@ -16,48 +17,7 @@ import io from 'socket.io-client';
 
 export const UserCTX = createContext()
 
-const initialState = {
-    user:"",
-    opponent:"",
-    roomID:"",
-    identifier:""   
-}
-
-
-function reducer(state,action){
-    switch(action.type){
-        case "UPDATE_USER":
-            return{
-                ...state,
-                user:action.payload
-            }
-        case "UPDATE_OPPONENT":
-            return{
-                ...state,
-                opponent:action.payload
-            }
-        case "UPDATE_ROOM":
-            return{
-                ...state,
-                roomID:action.payload
-            }
-        case "UPDATE_IDENTIFIER":
-            return{
-                ...state,
-                identifier:action.payload
-            }
-        case "UPDATE_MULTIPLE":
-            return{
-                ...state,
-                ...action.payload
-            }
-        default:
-            return state
-    }
-}
-
 let socket;
-
 
 const UserStore = ({children,history}) =>{
 
@@ -72,7 +32,7 @@ const UserStore = ({children,history}) =>{
         //Considering
         //Cut join interaction down to two steps
         // game found and game starting
-        // game found will let person bail out at last secnd before 
+        // game found will let person bail out at last second before 
     
         socket.on("game-starting",(room)=>{
 
@@ -94,7 +54,7 @@ const UserStore = ({children,history}) =>{
 
         return () => socket.off("game-starting")   
         
-    },[state])
+    },[state,dispatch])
 
     return(
         <UserCTX.Provider value={[state,dispatch,socket]}>
@@ -103,5 +63,5 @@ const UserStore = ({children,history}) =>{
     )
 } 
 
-export const Store = withRouter(UserStore)
+export default withRouter(UserStore)
 

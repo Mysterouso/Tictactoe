@@ -1,5 +1,6 @@
 import React from 'react';
 import { UserCTX } from '../Context&Reducers/Store';
+import buttonStyles from '../UtilityStyles/ButtonStyle'
 import {Grid,
         Typography,
         makeStyles,
@@ -14,7 +15,7 @@ import {Grid,
 import {orange} from '@material-ui/core/colors';
 import Spinner from './Spinner';
 
-const JoinUI = ({shouldWait,updateHosting}) =>{
+const JoinUI = ({ shouldWait }) =>{
 
     const classes = useStyles()
 
@@ -41,6 +42,8 @@ const JoinUI = ({shouldWait,updateHosting}) =>{
 
         socket.on("invalid-room",()=> setErrorState("Invalid room ID. Please leave blank if you want to join a random game"))  
 
+        socket.on("no-rooms",()=> setErrorState("There are no rooms available to join"))
+
         socket.on("room-full",()=>setErrorState("Room is already full"))
 
         // Todo -- change state of a disconnect value prior and reset upon game found
@@ -66,16 +69,18 @@ const JoinUI = ({shouldWait,updateHosting}) =>{
         e.preventDefault();
         const {name,isPrivate} = handle  
         socket.emit("create-game",{name,isPrivate})
-        updateHosting(true)
+        dispatch({type:"UPDATE_HOST",payload:true})
     }
 
     const joinGame = () =>{
         const {name,roomID} = handle
+
+        if(roomID && roomID.length !== 10) return setErrorState("Invalid room ID. Please leave blank if you want to join a random game")
+        
         socket.emit("join-game",handle)
 
         if(!roomID){
-            dispatch({type:"UPDATE_USER",payload:name})
-            updateHosting(false)
+            dispatch({type:"UPDATE_MULTIPLE",payload:{hostPlayer:false,user:name}})
             shouldWait(true)
         }
         else{
@@ -179,14 +184,7 @@ const useStyles = makeStyles(theme=>({
         // }
     },
     button:{
-        backgroundColor:orange[300],
-        color:"black",
-        "&:hover":{
-            backgroundColor:orange[600]
-        },
-        "&.Mui-disabled":{
-            backgroundColor:orange[100]
-        }
+        ...buttonStyles
         // "@media(max-width:599px)":{
         //     fontSize:"0.6rem"
         // }

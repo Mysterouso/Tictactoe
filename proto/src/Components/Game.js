@@ -1,34 +1,53 @@
 import React from 'react'
 import Square from './Square'
-import {makeStyles} from '@material-ui/core'
+import GameOverModal from './GameOverModal'
+import useLoadingButton from './UseLoadingButton'
+import {Paper,AppBar,Button,makeStyles} from '@material-ui/core'
 import { UserCTX } from '../Context&Reducers/Store';
-import { gameReducer,initialState } from '../Context&Reducers/GameReducer';
+import { GameCTX } from '../Context&Reducers/GameStore';
 
 
-const Game = ({turn}) => {
+const Game = () => {
 
-    const [globalUser,_,socket] = React.useContext(UserCTX)
-    const [myTurn, updateTurn] = turn
-    const [gameState,dispatch] = React.useReducer(gameReducer,initialState)
+    const [{roomID,opponent},_,socket] = React.useContext(UserCTX)
+    const [gameState,dispatch] = React.useContext(GameCTX)
+    
+    //Modal Logic//
+
+    const [open, setOpen] = React.useState(false)
+    const [isRematchModal,updateModal] = React.useState(false)
+    const handleRematchRequest = (res) =>{
+        if(!open) setOpen(true)
+
+    }
+    
+    const [loading,updateLoading] = useLoadingButton({socket,
+                                                      socketEvent:"rematch-requested",
+                                                      socketFn:handleRematchRequest
+                                                    })
+    //       //                                                    
 
     const checkWinCondition = React.useCallback((counter) =>{
+
         if(gameState.gameOver) return
 
         const updateGameOverState = (winningSign) =>{
-            let winner = winningSign === "X" ? "You" : globalUser.opponent
+            let winner = winningSign === "X" ? "You" : opponent
             if(winningSign === "") winner = ""
             dispatch({type:"UPDATE_GAME_OVER",payload:winner})
-            updateTurn(false)
+            // setOpen(true)
         }
         
         const {boardState,gameOver} = gameState
         
         for(let i=0; i < 3; i++){
             if(boardState[0][i] && boardState[0][i] === boardState[1][i] && boardState[1][i] === boardState[2][i]){
-               updateGameOverState(boardState[0][i])
+               updateGameOverState(boardState[0][i]) 
+               break;
             }
             else if(boardState[i][0] && boardState[i][0] === boardState[i][1] && boardState[i][1] === boardState[i][2]){
                    updateGameOverState(boardState[i][0])
+                   break;
                 }
         }
 
@@ -41,21 +60,26 @@ const Game = ({turn}) => {
 
         if(counter === 9 && !gameOver) updateGameOverState("")
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    },[gameState.boardState,gameState.gameOver,updateTurn,dispatch])
+    },[gameState.boardState,gameState.gameOver,dispatch])
 
     const updateBoard = React.useCallback((position,sign="X") => {
         dispatch({type:"UPDATE_BOARD",payload:{position,sign}})
-        updateTurn(currentTurn=>{console.log("the current turn was ",currentTurn); return !currentTurn})
-    },[dispatch,updateTurn])
+
+    },[dispatch])
 
     const playerUpdateBoard = (position) =>{
         updateBoard(position)
-        socket.emit("player-moved",{roomID:globalUser.roomID,position})
+        socket.emit("player-moved",{roomID:roomID,position})
     }
 
     React.useEffect(()=>{
-        // updateTurn(true)
+        // dispatch({type:"UPDATE_TURN",payload:true})
         socket.emit("players-ready")
+        console.log("gameState is ",gameState)
+        //Below line is for testing
+        // dispatch({type:"UPDATE_GAME_OVER",payload:""})
+
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
     },[])
 
@@ -72,27 +96,49 @@ const Game = ({turn}) => {
             checkWinCondition(gameState.winCounter)
         }
     },[gameState.winCounter,checkWinCondition])
-
+    
     const classes = useStyles()
 
     return (
         <>
-        <button onClick={()=>console.log("turn " + myTurn,"game state ",gameState.boardState,"checking counter ",gameState.winCounter)}/>
-        <div className={classes.container}>
+        <AppBar>
+            <Button onClick={()=>console.log("turn " + gameState.myTurn,"game state ",gameState.boardState,"checking counter ",gameState.winCounter)}>
+                Click me
+            </Button>
+        </AppBar>
+        <Paper className={classes.container}>
+            {
+            isRematchModal ? (
+            <GameOverModal 
+                loadingState={[loading,updateLoading]} 
+                openState={[open,setOpen]} 
+                roomID={roomID} 
+                socket={socket}
+            />
+            ) : (
+            <GameOverModal 
+            loadingState={[loading,updateLoading]} 
+            openState={[open,setOpen]} 
+            roomID={roomID} 
+            socket={socket}
+             />
+            )
+            }
           {     
              gameState.boardState.map((row,Xindex)=>{
                 return row.map((item,Yindex)=>{
-                    return <Square key={Xindex+""+Yindex} 
-                                   updateBoard={playerUpdateBoard}
-                                   myTurn={myTurn}
-                                   classProp={classes.square} 
-                                   position={[Xindex,Yindex]}
-                                   value={item}
-                                   />
+                    return <Square 
+                                key={Xindex+""+Yindex} 
+                                updateBoard={playerUpdateBoard}
+                                myTurn={gameState.myTurn}
+                                classProp={classes.square} 
+                                position={[Xindex,Yindex]}
+                                value={item}
+                            />
                 })
               })
           }
-        </div>
+        </Paper>
         </>
     )
 }
@@ -101,7 +147,8 @@ const useStyles = makeStyles(theme=>({
     container:{
         margin: "50px auto 0px",
         backgroundColor:"white",
-        width:"60%",
+        width:"600px",
+        minHeight:600,
         display:"grid",
         gridTemplateColumns: "repeat(3,1fr)",
         gridTemplateRows: "repeat(3,1fr)"

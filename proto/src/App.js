@@ -1,7 +1,8 @@
 import React from 'react';
 import {BrowserRouter as Router,Switch,Route} from 'react-router-dom';
 import CssBaseline from '@material-ui/core/CssBaseline';
-import {Store} from './Context&Reducers/Store'
+import Store from './Context&Reducers/Store';
+import GameStore from './Context&Reducers/GameStore';
 
 import './App.css';
 
@@ -18,7 +19,13 @@ function App() {
         <div className="App">
           <Switch>
             <Route exact path="/" component={Join} />
-            <Route path="/play/:roomID([\S]{10})" component={Main}/>
+            <Route path="/play/:roomID([\S]{10})" 
+                   render={(props)=>(
+                  <GameStore>
+                    <Main {...props}/>
+                  </GameStore>
+                      )}
+            />
             <Route component={NotFound}/>
           </Switch>
         </div>

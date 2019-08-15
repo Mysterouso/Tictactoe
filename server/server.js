@@ -40,10 +40,14 @@ io.on("connection",(socket)=>{
     socket.on("join-game",({name,roomID})=>{
         // Todo - should send if game was not found -- on client should resend join request if game not found
         const roomKeys = Object.keys(rooms)
+        const numOfRooms = roomKeys.length
         //Emit event if no rooms exist
-        if(!roomID && roomKeys.length > 0){
+
+        if(numOfRooms <= 0){ return io.to(socket.id).emit("no-rooms")}
+
+        if(!roomID){
             
-            for(let i=0;i<roomKeys.length;i++){
+            for(let i = 0; i < numOfRooms; i++){
                 const currentRoomKey = roomKeys[i]
                 const currentRoom = rooms[currentRoomKey]
 
@@ -75,13 +79,8 @@ io.on("connection",(socket)=>{
             else{
                 io.to(socket.id).emit("invalid-room")
             }
-
-
         }
-        else{
-            io.to(socket.id).emit("invalid-room")
-        }
-       
+        else io.to(socket.id).emit("invalid-room")
     })
 
     socket.on("disconnect",()=>{
@@ -127,14 +126,19 @@ io.on("connection",(socket)=>{
 
         if(isPlayer>=0){
             io.to(socket.id).emit("player-verified")
-            const randIndex = Math.round(Math.random())
-            const firstTurn = currentRoom.users[randIndex]
-            io.in(roomID).emit("first-turn",{firstTurn})
+            
         }
         else{
             io.to(socket.id).emit("player-not-verified")
         }
 
+    })
+
+    socket.on("select-first-turn",({identifier,roomID})=>{
+        const randIndex = Math.round(Math.random())
+        const firstTurn = rooms[roomID].users[randIndex]
+        console.log("The rand index was ",randIndex ,"and user was ", firstTurn)
+        io.in(roomID).emit("first-turn",{firstTurn})
     })
 
     //Gameplay progression
@@ -150,6 +154,15 @@ io.on("connection",(socket)=>{
     //Chatting
 
     //Reset game
+    socket.on("request-rematch",({ roomID })=>{
+        socket.to(roomID).emit("rematch-requested")
+    })
+
+    socket.on("rematch-response",(({ response,roomID })=>{
+        socket.to(roomID).emit("rematch-reply",{response})
+        // logic to restart game state if rematch accepted
+    }))
+
 })
 
 http.listen(5000,()=>console.log("Server started"))

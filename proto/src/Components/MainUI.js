@@ -1,17 +1,29 @@
 import React from 'react'
+import { makeStyles } from '@material-ui/core'
 import Navigation from './Navigation'
 import Game from './Game'
 
-const MainUI = ({turn}) => {
+const MainUI = () => {
+
+    const classes = useStyles()
+
     return (
-        <React.Fragment>
+        <div className={classes.container}>
             {/* <Navigation/> */}
             <div>
-                Greetings from MainUI
-                <Game turn={turn}/>
+                <Game/>
             </div>
-        </React.Fragment>
+        </div>
     )
 }
+
+const useStyles = makeStyles(theme=>({
+    container:{
+        height:"100vh",
+        width:"100%",
+        backgroundColor:"#333"
+    }
+})
+)
 
 export default MainUI

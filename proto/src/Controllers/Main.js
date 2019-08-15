@@ -1,17 +1,17 @@
 import React from 'react';
 import { UserCTX } from '../Context&Reducers/Store';
+import { GameCTX } from  '../Context&Reducers/GameStore';
 
 import MainUI from '../Components/MainUI';
 
 
 const Main = ({match}) =>{
 
-    const [globalUser,dispatch,socket] = React.useContext(UserCTX)
+    const [globalUser,_,socket] = React.useContext(UserCTX)
+    const [gameState,dispatch] = React.useContext(GameCTX)
 
     const [loading,updateLoading] = React.useState(false)
     const [isAuthorized,changeAuthorization] = React.useState(true)
-
-    const [myTurn,updateTurn] = React.useState(false)
 
     React.useEffect(()=>{
         const {identifier,roomID} = globalUser
@@ -27,10 +27,14 @@ const Main = ({match}) =>{
     },[])
 
     React.useEffect(()=>{
+        
         socket.on("player-verified",()=>{
             // updateLoading(false)
             // changeAuthorization(true)
             console.log("I am verified")
+            const identifier = globalUser.identifier
+            const roomID = globalUser.roomID
+            if(globalUser.hostPlayer) socket.emit("select-first-turn",{identifier,roomID})
         })
         socket.on("player-not-verified",()=>{
             // updateLoading(false)
@@ -39,7 +43,7 @@ const Main = ({match}) =>{
         socket.on("first-turn",({firstTurn})=>{
             console.log("I work ",firstTurn)
             if(firstTurn.userID === globalUser.identifier){
-                updateTurn(true)
+                dispatch({type:"UPDATE_TURN",payload:true})
             }
         })
         return ()=>{
@@ -47,19 +51,21 @@ const Main = ({match}) =>{
             socket.off("player-not-verified")
             socket.off("first-turn")
         }
-    },[socket,globalUser.identifier])
+    },[socket,globalUser.identifier,globalUser.hostPlayer,dispatch])
 
     if(loading){
         return(
             <div>Loading...</div>
         )
     }
-    
+
     return(
         <React.Fragment>
-            {isAuthorized ? <MainUI turn={[myTurn,updateTurn]}/> : <div>Not authorized</div>}
+            {isAuthorized ? <MainUI/> : <div>Not authorized</div>}
         </React.Fragment>
     ) 
 }
+
+
 
 export default Main;
