@@ -18,8 +18,8 @@ const Square = ({position,classProp,updateBoard,myTurn,value}) => {
 
     return (
         <div className={classProp} onClick={makeMove}>
-            {value}
-            {/* X */}
+            {/* {value} */}
+            X
         </div>
     )
 }

@@ -51,7 +51,7 @@ const Main = ({match}) =>{
             socket.off("player-not-verified")
             socket.off("first-turn")
         }
-    },[socket,globalUser.identifier,globalUser.hostPlayer,dispatch])
+    },[socket,globalUser.identifier,globalUser.hostPlayer,globalUser.roomID,dispatch])
 
     if(loading){
         return(

@@ -1,6 +1,7 @@
 import React from 'react'
 import Square from './Square'
 import GameOverModal from './GameOverModal'
+import RematchModal from './RematchModal'
 import useLoadingButton from './UseLoadingButton'
 import {Paper,AppBar,Button,makeStyles} from '@material-ui/core'
 import { UserCTX } from '../Context&Reducers/Store';
@@ -14,11 +15,11 @@ const Game = () => {
     
     //Modal Logic//
 
-    const [open, setOpen] = React.useState(false)
-    const [isRematchModal,updateModal] = React.useState(false)
+    const [open, setOpen] = React.useState(true)
+    const [isRematchModal,updateModal] = React.useState(true)
     const handleRematchRequest = (res) =>{
         if(!open) setOpen(true)
-
+        updateModal(true)
     }
     
     const [loading,updateLoading] = useLoadingButton({socket,
@@ -106,56 +107,66 @@ const Game = () => {
                 Click me
             </Button>
         </AppBar>
-        <Paper className={classes.container}>
-            {
-            isRematchModal ? (
-            <GameOverModal 
+        <div className={classes.container}>
+            <Paper className={classes.boardContainer}>
+                {
+                isRematchModal ? (
+                <RematchModal
+                    opponent={opponent}
+                    openState={[open,setOpen]} 
+                    roomID={roomID} 
+                    socket={socket}
+                />
+                ) : (
+                <GameOverModal 
                 loadingState={[loading,updateLoading]} 
                 openState={[open,setOpen]} 
                 roomID={roomID} 
                 socket={socket}
-            />
-            ) : (
-            <GameOverModal 
-            loadingState={[loading,updateLoading]} 
-            openState={[open,setOpen]} 
-            roomID={roomID} 
-            socket={socket}
-             />
-            )
-            }
-          {     
-             gameState.boardState.map((row,Xindex)=>{
-                return row.map((item,Yindex)=>{
-                    return <Square 
-                                key={Xindex+""+Yindex} 
-                                updateBoard={playerUpdateBoard}
-                                myTurn={gameState.myTurn}
-                                classProp={classes.square} 
-                                position={[Xindex,Yindex]}
-                                value={item}
-                            />
-                })
-              })
-          }
-        </Paper>
+                />
+                )
+                }
+                {     
+                    gameState.boardState.map((row,Xindex)=>{
+                        return row.map((item,Yindex)=>{
+                            return <Square 
+                                        key={Xindex+""+Yindex} 
+                                        updateBoard={playerUpdateBoard}
+                                        myTurn={gameState.myTurn}
+                                        classProp={classes.square} 
+                                        position={[Xindex,Yindex]}
+                                        value={item}
+                                    />
+                        })
+                    })
+                }
+            </Paper>
+        </div>
         </>
     )
 }
 
 const useStyles = makeStyles(theme=>({
     container:{
-        margin: "50px auto 0px",
+        height:"100%",
+        width:"100%",
+        paddingTop:36
+    },
+    boardContainer:{
+        margin: "12px auto 0px",
         backgroundColor:"white",
-        width:"600px",
-        minHeight:600,
+        width:"480px",
+        minHeight:480,
         display:"grid",
         gridTemplateColumns: "repeat(3,1fr)",
         gridTemplateRows: "repeat(3,1fr)"
     },
     square:{
+        fontSize:"8rem",
+        textAlign:"center",
+        userSelect:"none",
         boxSizing:"content-box",
-        height:200,
+        height:160,
         borderBottom: "2px solid black",
         borderRight: "2px solid black",
         "&:nth-child(3n)":{
