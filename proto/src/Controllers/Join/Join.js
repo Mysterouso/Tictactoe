@@ -7,7 +7,7 @@ import {Grid,
         } from '@material-ui/core';
 import { UserCTX } from '../../Context&Reducers/Store';
 
-import JoinUI from '../../Components/JoinUI'
+import JoinUI from '../../Components/UI/JoinUI'
 import Waiting from '../../Components/Waiting'
 
 const Join = (props) => {

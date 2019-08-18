@@ -1,8 +1,8 @@
 import React from 'react'
-import Square from './Square'
-import GameOverStroke from './GameOverStroke'
-import GameOverModal from './GameOverModal'
-import RematchModal from './RematchModal'
+import Square from './GameBoard/Square'
+import GameOverStroke from './GameBoard/GameOverStroke'
+import GameOverModal from './Modals/GameOverModal'
+import RematchModal from './Modals/RematchModal'
 import useLoadingButton from '../hooks/UseLoadingButton'
 import CheckGameOver from '../helperFunctions/CheckGameOver'
 import {Paper,AppBar,Button,makeStyles} from '@material-ui/core'
@@ -15,10 +15,8 @@ const Game = () => {
     const [{roomID,opponent},_,socket] = React.useContext(UserCTX)
     const [gameState,dispatch] = React.useContext(GameCTX)
 
-
-    
     //    Board stroke      //
-    const [winPosition,updateWinPosition] = React.useState({direction:null,position:null})
+    const [winPosition,updateWinPosition] = React.useState({direction:"",position:[]})
 
     // WinCondition Check //
 
@@ -147,6 +145,7 @@ const useStyles = makeStyles(theme=>({
         gridTemplateRows: "repeat(3,1fr)"
     },
     square:{
+        lineHeight:"1.3",
         fontSize:"8rem",
         textAlign:"center",
         userSelect:"none",
@@ -161,6 +160,24 @@ const useStyles = makeStyles(theme=>({
             borderBottom:0
         }
         
+    },
+    "@global":{
+        "@keyframes expand":{
+            from:{
+                width:0
+            },
+            to:{
+                width:"90%"
+            }
+        },
+        "@keyframes diagonalExpand":{
+            from:{
+                width:0
+            },
+            to:{
+                width:"128%"
+            }
+        },
     }
 }))
 

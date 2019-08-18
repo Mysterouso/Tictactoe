@@ -1,7 +1,8 @@
 export const initialState = {
     myTurn:false,
     winCounter:0,
-    gameOver:false,
+    // gameOver:false,
+    gameOver:true,
     winningPlayer:"",
     boardState:Array(3).fill(Array(3).fill(""))
 }
@@ -31,6 +32,8 @@ export const gameReducer = (state,action) => {
                 ...state,
                 myTurn: action.payload !== undefined ? action.payload : !state.myTurn
             }
+        case "RESET_BOARD":
+            return initialState
         default:
             return state
     }

@@ -2,7 +2,7 @@ import React from 'react';
 import { UserCTX } from '../Context&Reducers/Store';
 import { GameCTX } from  '../Context&Reducers/GameStore';
 
-import MainUI from '../Components/MainUI';
+import MainUI from '../Components/UI/MainUI';
 
 
 const Main = ({match}) =>{

@@ -1,8 +1,8 @@
 import React from 'react'
 
-const CheckGameOver = (gameState,opponent,dispatch,updateWinPosition) => {
+const CheckGameOver = (gameState,opponent,dispatch,updateWinPosition) =>( 
     
-    const checkWinCondition = React.useCallback((counter) =>{
+    React.useCallback((counter) =>{
 
         if(gameState.gameOver) return
 
@@ -40,8 +40,5 @@ const CheckGameOver = (gameState,opponent,dispatch,updateWinPosition) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     },[gameState.boardState,gameState.gameOver,dispatch])
 
-    return checkWinCondition
-
-}
-
+)
 export default CheckGameOver

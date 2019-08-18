@@ -1,5 +1,5 @@
 import React from 'react';
-import buttonStyles from '../UtilityStyles/ButtonStyle'
+import buttonStyles from '../../UtilityStyles/ButtonStyle'
 import { makeStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
@@ -7,9 +7,9 @@ import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
-import { GameCTX } from '../Context&Reducers/GameStore';
+import { GameCTX } from '../../Context&Reducers/GameStore';
 
-const loading = false
+const loading = false //temp
 
 const RematchModal = ({ openState,roomID,socket,opponent }) => {
   const classes = useStyles()
@@ -30,6 +30,7 @@ const RematchModal = ({ openState,roomID,socket,opponent }) => {
 
   const accept = () =>{
     socket.emit("rematch-response",{response:true,roomID})
+    dispatch({type:"RESET_BOARD"})
   }
 
   return (

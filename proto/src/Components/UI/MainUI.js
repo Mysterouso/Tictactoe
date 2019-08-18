@@ -1,7 +1,7 @@
 import React from 'react'
 import { makeStyles } from '@material-ui/core'
-import Navigation from './Navigation'
-import Game from './Game'
+import Navigation from '../Navigation'
+import Game from '../Game'
 
 const MainUI = () => {
 

@@ -159,7 +159,8 @@ io.on("connection",(socket)=>{
     })
 
     socket.on("rematch-response",(({ response,roomID })=>{
-        socket.to(roomID).emit("rematch-reply",{response})
+        if(response) socket.to(roomID).emit("rematch-accepted",{response})
+        else socket.to(roomID).emit("rematch-declined",{response})
         // logic to restart game state if rematch accepted
     }))
 

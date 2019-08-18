@@ -1,6 +1,6 @@
 import React from 'react';
-import { UserCTX } from '../Context&Reducers/Store';
-import buttonStyles from '../UtilityStyles/ButtonStyle'
+import { UserCTX } from '../../Context&Reducers/Store';
+import buttonStyles from '../../UtilityStyles/ButtonStyle'
 import {Grid,
         Typography,
         makeStyles,
@@ -13,7 +13,7 @@ import {Grid,
         useMediaQuery
         } from '@material-ui/core';
 import {orange} from '@material-ui/core/colors';
-import Spinner from './Spinner';
+import Spinner from '../Spinner';
 
 const JoinUI = ({ shouldWait }) =>{
 
