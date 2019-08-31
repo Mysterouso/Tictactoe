@@ -51,6 +51,7 @@ const JoinUI = ({ shouldWait }) =>{
 
         return () =>{
             socket.off("invalid-room")
+            socket.off("player-disconnected")
         } 
     },[socket])
 

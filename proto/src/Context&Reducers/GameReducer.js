@@ -1,8 +1,8 @@
 export const initialState = {
     myTurn:false,
     winCounter:0,
-    // gameOver:false,
-    gameOver:true,
+    gameOver:false,
+    // gameOver:true,
     winningPlayer:"",
     boardState:Array(3).fill(Array(3).fill(""))
 }

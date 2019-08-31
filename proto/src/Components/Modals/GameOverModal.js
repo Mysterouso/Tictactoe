@@ -16,19 +16,29 @@ import Switch from '@material-ui/core/Switch';
 import RematchDialog from './RematchDialog';
 import { GameCTX } from '../../Context&Reducers/GameStore';
 
-const GameOverModal = ({ loadingState,openState,roomID,socket }) => {
+const GameOverModal = ({ loadingState,openState,modalState,roomID,socket }) => {
   const classes = useStyles()
   const [open, setOpen] = openState
   const [loading,updateLoading] = loadingState
+  const [modalResp,setModalState] = modalState
   const [rematchRequested,requestRematch] = React.useState(false)
   // const [isRematch,updateRematch] = rematchState
   const [{gameOver,winningPlayer},dispatch] = React.useContext(GameCTX)
   
- 
+ let resetRematch = React.useCallback((res)=>{
+                                            requestRematch(res);
+                                            updateLoading(false)
+                                          },[])
+
   React.useEffect(()=>{
-    if(!gameOver) return
+    if(!gameOver){
+      if(rematchRequested) resetRematch(false)  
+      return
+    }
     setOpen(true)
-  },[gameOver])
+  },[gameOver,rematchRequested,requestRematch])
+
+  React.useEffect(()=>setModalState(null),[])
 
   const handleClose = () => {
     setOpen(false);
@@ -50,7 +60,7 @@ const GameOverModal = ({ loadingState,openState,roomID,socket }) => {
         aria-labelledby="max-width-dialog-title"
       >
         { rematchRequested ? (
-          <RematchDialog classes={classes}/>
+          <RematchDialog classes={classes} modalState={modalState} openState={openState} updateLoading={updateLoading}/>
           ) : (
           <React.Fragment>
             <DialogTitle 
@@ -73,7 +83,7 @@ const GameOverModal = ({ loadingState,openState,roomID,socket }) => {
           <Button disabled={loading} className={classes.button} onClick={handleClose} color="primary">
             Close
           </Button>
-          <Button disabled={loading} className={classes.button} onClick={rematch} color="primary">
+          <Button disabled={loading || modalResp !== null} className={classes.button} onClick={rematch} color="primary">
             Request rematch
           </Button>
         </DialogActions>

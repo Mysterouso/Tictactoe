@@ -11,9 +11,10 @@ import { GameCTX } from '../../Context&Reducers/GameStore';
 
 const loading = false //temp
 
-const RematchModal = ({ openState,roomID,socket,opponent }) => {
+const RematchModal = ({ openState,roomID,socket,opponent,modalState }) => {
   const classes = useStyles()
   const [open, setOpen] = openState
+  let updateModalState = modalState[1]
   //const [loading,updateLoading] = loadingState
   const [{gameOver},dispatch] = React.useContext(GameCTX)
   
@@ -31,6 +32,9 @@ const RematchModal = ({ openState,roomID,socket,opponent }) => {
   const accept = () =>{
     socket.emit("rematch-response",{response:true,roomID})
     dispatch({type:"RESET_BOARD"})
+    setOpen(false)
+    updateModalState(true)
+    setTimeout(()=>updateModalState(null),2000)
   }
 
   return (

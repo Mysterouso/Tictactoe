@@ -85,9 +85,11 @@ io.on("connection",(socket)=>{
 
     socket.on("disconnect",()=>{
         
+        
         const userToNotify = disconnect(socket,rooms)
-
-        io.to(userToNotify).emit("player-disconnected")
+        console.log("There has been a disconnection")
+        console.log("user id ",userToNotify)
+        io.to(userToNotify).emit("player-disconnected",userToNotify)
 
         //Pending - need to create logic for leaving after game ends
         //Could be done on client -- maybe no further action is needed
@@ -101,6 +103,8 @@ io.on("connection",(socket)=>{
      socket.on("show-rooms",(data)=>{
         socket.emit("room",rooms)
     })
+
+    socket.on("test",()=>socket.emit("test-run"))
 
     //---------------------------------Matchmaking----------------------------------------//
 
@@ -134,6 +138,13 @@ io.on("connection",(socket)=>{
 
     })
 
+    function handleRand(roomID){
+        const randIndex = Math.round(Math.random())
+        const firstTurn = rooms[roomID].users[randIndex]
+        console.log("The rand index was ",randIndex ,"and user was ", firstTurn)
+        return firstTurn
+    }
+
     socket.on("select-first-turn",({identifier,roomID})=>{
         const randIndex = Math.round(Math.random())
         const firstTurn = rooms[roomID].users[randIndex]
@@ -144,7 +155,6 @@ io.on("connection",(socket)=>{
     //Gameplay progression
 
     socket.on("player-moved",({roomID,position})=>{
-        console.log(position)
         socket.to(roomID).emit("opponent-moved",{position})
     })
 
@@ -159,8 +169,14 @@ io.on("connection",(socket)=>{
     })
 
     socket.on("rematch-response",(({ response,roomID })=>{
-        if(response) socket.to(roomID).emit("rematch-accepted",{response})
-        else socket.to(roomID).emit("rematch-declined",{response})
+        if(response){ 
+            socket.to(roomID).emit("rematch-accepted",{response});
+            console.log("accepted")
+            let firstTurn = handleRand(roomID)
+            io.in(roomID).emit("first-turn",{firstTurn})
+
+        }
+        else{ socket.to(roomID).emit("rematch-declined",{response});console.log("declined")}
         // logic to restart game state if rematch accepted
     }))
 

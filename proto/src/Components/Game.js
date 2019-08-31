@@ -8,6 +8,7 @@ import CheckGameOver from '../helperFunctions/CheckGameOver'
 import {Paper,AppBar,Button,makeStyles} from '@material-ui/core'
 import { UserCTX } from '../Context&Reducers/Store';
 import { GameCTX } from '../Context&Reducers/GameStore';
+import UseSocketListener from '../hooks/UseSocketListener';
 
 
 const Game = () => {
@@ -33,6 +34,8 @@ const Game = () => {
 
     const [open, setOpen] = React.useState(false)
     const [isRematchModal,updateModal] = React.useState(false)
+    const [rematchResp,setResponseState] = React.useState(null)
+
     const handleRematchRequest = (res) =>{
         if(!open) setOpen(true)
         updateModal(true)
@@ -65,6 +68,27 @@ const Game = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     },[])
 
+    //Rematch useEffect listeners
+
+    UseSocketListener({
+        socket,
+        socketEvent:"rematch-accepted",
+        socketFn:()=>{
+            setResponseState(true)
+            dispatch({type:"RESET_BOARD"})
+            setTimeout(()=>setResponseState(null),2000)
+            updateModal(false)
+        }
+    })
+
+    UseSocketListener({
+        socket,
+        socketEvent:"rematch-declined",
+        socketFn:()=>setResponseState(false)
+    })
+    
+    //
+
     React.useEffect(()=>{
         socket.on("opponent-moved",({position})=>{
             updateBoard(position,"O")
@@ -89,6 +113,8 @@ const Game = () => {
                         openState={[open,setOpen]} 
                         roomID={roomID} 
                         socket={socket}
+                        modalState={[rematchResp,setResponseState]}
+
                     />
                     ) : (
                     <GameOverModal 
@@ -96,6 +122,7 @@ const Game = () => {
                         openState={[open,setOpen]} 
                         roomID={roomID} 
                         socket={socket}
+                        modalState={[rematchResp,setResponseState]}
                     />
                 )
                 }
@@ -113,6 +140,7 @@ const Game = () => {
                                             classProp={classes.square} 
                                             position={[Xindex,Yindex]}
                                             value={item}
+                                            rematchState={[rematchResp,setResponseState]}
                                         />
                             })
                         })
