@@ -1,14 +1,13 @@
 import React from 'react'
 import Square from './GameBoard/Square'
 import GameOverStroke from './GameBoard/GameOverStroke'
-import GameOverModal from './Modals/GameOverModal'
-import RematchModal from './Modals/RematchModal'
-import useLoadingButton from '../hooks/UseLoadingButton'
+import ModalController from './ModalController'
 import CheckGameOver from '../helperFunctions/CheckGameOver'
 import {Paper,AppBar,Button,makeStyles} from '@material-ui/core'
 import { UserCTX } from '../Context&Reducers/Store';
 import { GameCTX } from '../Context&Reducers/GameStore';
 import UseSocketListener from '../hooks/UseSocketListener';
+import {initialState} from '../Context&Reducers/GameReducer'
 
 
 const Game = () => {
@@ -20,32 +19,21 @@ const Game = () => {
     const [winPosition,updateWinPosition] = React.useState({direction:"",position:[]})
 
     // WinCondition Check //
-
     const checkWinCondition = CheckGameOver(gameState,opponent,dispatch,updateWinPosition)
 
     React.useEffect(()=>{
         console.log("updating ", gameState.winCounter)
         if(gameState.winCounter>=5){
-            checkWinCondition(gameState.winCounter)
+            checkWinCondition()
         }
     },[gameState.winCounter,checkWinCondition])
-    
-    //Modal Logic//
 
-    const [open, setOpen] = React.useState(false)
-    const [isRematchModal,updateModal] = React.useState(false)
+    // Reset //
+    const [shouldReset,doReset] = React.useState(false)
+    
+    //Rematch response //
     const [rematchResp,setResponseState] = React.useState(null)
-
-    const handleRematchRequest = (res) =>{
-        if(!open) setOpen(true)
-        updateModal(true)
-    }
-    
-    const [loading,updateLoading] = useLoadingButton({socket,
-                                                      socketEvent:"rematch-requested",
-                                                      socketFn:handleRematchRequest
-                                                    })                                         
-
+                                      
     //Board updating Logic //
 
     const updateBoard = React.useCallback((position,sign="X") => {
@@ -74,10 +62,10 @@ const Game = () => {
         socket,
         socketEvent:"rematch-accepted",
         socketFn:()=>{
-            setResponseState(true)
             dispatch({type:"RESET_BOARD"})
-            setTimeout(()=>setResponseState(null),2000)
-            updateModal(false)
+            setResponseState(true)
+            doReset(true)
+            setTimeout(()=>{setResponseState(null)},2000)
         }
     })
 
@@ -86,8 +74,6 @@ const Game = () => {
         socketEvent:"rematch-declined",
         socketFn:()=>setResponseState(false)
     })
-    
-    //
 
     React.useEffect(()=>{
         socket.on("opponent-moved",({position})=>{
@@ -101,31 +87,22 @@ const Game = () => {
     return (
         <>
         <AppBar>
-            <Button onClick={()=>console.log("turn " + gameState.myTurn,"game state ",gameState.boardState,"checking counter ",gameState.winCounter)}>
+            {/* <Button onClick={()=>console.log("turn " + gameState.myTurn,"game state ",gameState.boardState,"checking counter ",gameState.winCounter)}>
+                Click me
+            </Button> */}
+            <Button onClick={()=>console.log("gameOver from game ",gameState.gameOver)}>
                 Click me
             </Button>
         </AppBar>
         <div className={classes.container}>
-                {
-                    isRematchModal ? (
-                    <RematchModal
-                        opponent={opponent}
-                        openState={[open,setOpen]} 
-                        roomID={roomID} 
-                        socket={socket}
-                        modalState={[rematchResp,setResponseState]}
-
-                    />
-                    ) : (
-                    <GameOverModal 
-                        loadingState={[loading,updateLoading]} 
-                        openState={[open,setOpen]} 
-                        roomID={roomID} 
-                        socket={socket}
-                        modalState={[rematchResp,setResponseState]}
-                    />
-                )
-                }
+            <ModalController 
+                    socket={socket}
+                    reset={[shouldReset,doReset]}
+                    rematchResponse={[rematchResp,setResponseState]}
+                    opponent={opponent}
+                    roomID={roomID}
+                    gameOver={gameState.gameOver}
+            />
             <div className={classes.relative}>
                 {gameState.gameOver && <GameOverStroke winPosition={winPosition}/>}
                 <Paper className={classes.boardContainer}>

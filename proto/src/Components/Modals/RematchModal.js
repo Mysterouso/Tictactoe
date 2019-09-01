@@ -11,18 +11,13 @@ import { GameCTX } from '../../Context&Reducers/GameStore';
 
 const loading = false //temp
 
-const RematchModal = ({ openState,roomID,socket,opponent,modalState }) => {
+const RematchModal = ({ openState,roomID,socket,opponent,modalState,reset }) => {
   const classes = useStyles()
   const [open, setOpen] = openState
+  const [shouldReset,doReset] = reset
   let updateModalState = modalState[1]
   //const [loading,updateLoading] = loadingState
-  const [{gameOver},dispatch] = React.useContext(GameCTX)
-  
- 
-  React.useEffect(()=>{
-    if(!gameOver) return
-    setOpen(true)
-  },[gameOver])
+  const [Unused,dispatch] = React.useContext(GameCTX)
 
   const handleClose = () => {
     socket.emit("rematch-response",{response:false,roomID})
@@ -31,9 +26,11 @@ const RematchModal = ({ openState,roomID,socket,opponent,modalState }) => {
 
   const accept = () =>{
     socket.emit("rematch-response",{response:true,roomID})
+    // Same as rematch-accepted response -- possibly refactor
     dispatch({type:"RESET_BOARD"})
     setOpen(false)
     updateModalState(true)
+    doReset(true)
     setTimeout(()=>updateModalState(null),2000)
   }
 

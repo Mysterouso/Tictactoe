@@ -31,12 +31,9 @@ const GameOverModal = ({ loadingState,openState,modalState,roomID,socket }) => {
                                           },[])
 
   React.useEffect(()=>{
-    if(!gameOver){
-      if(rematchRequested) resetRematch(false)  
-      return
-    }
-    setOpen(true)
-  },[gameOver,rematchRequested,requestRematch])
+    if(!gameOver && rematchRequested) resetRematch(false)  
+
+  },[gameOver,rematchRequested,resetRematch])
 
   React.useEffect(()=>setModalState(null),[])
 
