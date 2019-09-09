@@ -2,17 +2,18 @@ import React from 'react'
 import Square from './GameBoard/Square'
 import GameOverStroke from './GameBoard/GameOverStroke'
 import ModalController from './ModalController'
+import Hud from './Hud'
+import ChatBox from './ChatBox'
 import CheckGameOver from '../helperFunctions/CheckGameOver'
 import {Paper,AppBar,Button,makeStyles} from '@material-ui/core'
 import { UserCTX } from '../Context&Reducers/Store';
 import { GameCTX } from '../Context&Reducers/GameStore';
 import UseSocketListener from '../hooks/UseSocketListener';
-import {initialState} from '../Context&Reducers/GameReducer'
 
 
 const Game = () => {
 
-    const [{roomID,opponent},_,socket] = React.useContext(UserCTX)
+    const [{roomID,user,opponent},_,socket] = React.useContext(UserCTX)
     const [gameState,dispatch] = React.useContext(GameCTX)
 
     //    Board stroke      //
@@ -47,6 +48,13 @@ const Game = () => {
     }
 
     React.useEffect(()=>{
+        socket.on("opponent-moved",({position})=>{
+            updateBoard(position,"O")
+        })
+        return () => socket.off("opponent-moved")
+    },[socket,updateBoard,gameState.boardState])
+
+    React.useEffect(()=>{
         socket.emit("players-ready")
         console.log("gameState is ",gameState)
         //Below line is for testing
@@ -75,13 +83,6 @@ const Game = () => {
         socketFn:()=>setResponseState(false)
     })
 
-    React.useEffect(()=>{
-        socket.on("opponent-moved",({position})=>{
-            updateBoard(position,"O")
-        })
-        return () => socket.off("opponent-moved")
-    },[socket,updateBoard,gameState.boardState])
-
     const classes = useStyles()
 
     return (
@@ -104,6 +105,7 @@ const Game = () => {
                     gameOver={gameState.gameOver}
             />
             <div className={classes.relative}>
+                <Hud/>
                 {gameState.gameOver && <GameOverStroke winPosition={winPosition}/>}
                 <Paper className={classes.boardContainer}>
                 
@@ -124,6 +126,11 @@ const Game = () => {
                     }
                 </Paper>
             </div>
+            <ChatBox
+                socket={socket}
+                roomID={roomID}
+                user={user}
+            />
         </div>
         </>
     )

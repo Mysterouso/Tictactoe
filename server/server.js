@@ -146,9 +146,7 @@ io.on("connection",(socket)=>{
     }
 
     socket.on("select-first-turn",({identifier,roomID})=>{
-        const randIndex = Math.round(Math.random())
-        const firstTurn = rooms[roomID].users[randIndex]
-        console.log("The rand index was ",randIndex ,"and user was ", firstTurn)
+        let firstTurn = handleRand(roomID)
         io.in(roomID).emit("first-turn",{firstTurn})
     })
 
@@ -160,9 +158,6 @@ io.on("connection",(socket)=>{
 
     // gameSocket(io,socket,rooms)
     
-    
-    //Chatting
-
     //Reset game
     socket.on("request-rematch",({ roomID })=>{
         socket.to(roomID).emit("rematch-requested")
@@ -179,6 +174,14 @@ io.on("connection",(socket)=>{
         else{ socket.to(roomID).emit("rematch-declined",{response});console.log("declined")}
         // logic to restart game state if rematch accepted
     }))
+
+    // Chatting
+
+    socket.on("send-message",({message,roomID,user})=>{
+        if(!rooms[roomID]) return
+        socket.to(roomID).emit("message-received",({message,user}))
+    })
+
 
 })
 
